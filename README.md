@@ -11,6 +11,11 @@ satellite, génère du PyQGIS — et exécute, le tout avec NVIDIA NIM au cœur.
 
 **Nom produit** : « GeoSylva AI » (marketing) = plugin QGIS « QGISIA2 » (identifiant technique).
 
+> **QGISIA** est une spécialisation de
+> [**Quintessences**](https://github.com/NeooeN45/Quintessences) —
+> écosystème d'intelligence environnementale propulsé par le moteur
+> GSIE (General System Intelligence Engine).
+
 [![QGIS](https://img.shields.io/badge/QGIS-3.16%2B%20%7C%204.0-green?logo=qgis&logoColor=white)](https://qgis.org)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white)](https://python.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
