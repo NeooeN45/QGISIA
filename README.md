@@ -190,3 +190,12 @@ Copernicus · Hub'Eau · GBIF · DVF — 🌍 Nominatim · Open-Meteo · STAC Ea
 [⭐ Star](https://github.com/NeooeN45/QGISIA2) · [🐛 Bug](https://github.com/NeooeN45/QGISIA2/issues) · [💡 Idée](https://github.com/NeooeN45/QGISIA2/issues)
 
 </div>
+
+---
+
+## Contact
+
+Pour toute question, réclamation ou collaboration :
+
+**5jvw9s5zj@mozmail.com**
+
