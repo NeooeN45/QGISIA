@@ -1,0 +1,1235 @@
+{
+  "version": 1,
+  "description": "Catalogue de sources cartographiques mondiales gratuites (XYZ/WMTS/WMS).",
+  "sources": [
+    {
+      "id": "osm-standard",
+      "name": "OpenStreetMap standard",
+      "category": "basemap",
+      "provider": "OSM",
+      "service_type": "XYZ",
+      "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "carto-positron",
+      "name": "CARTO Positron (clair)",
+      "category": "basemap",
+      "provider": "CARTO",
+      "service_type": "XYZ",
+      "url": "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap, © CARTO"
+    },
+    {
+      "id": "carto-dark",
+      "name": "CARTO Dark Matter (sombre)",
+      "category": "basemap",
+      "provider": "CARTO",
+      "service_type": "XYZ",
+      "url": "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap, © CARTO"
+    },
+    {
+      "id": "carto-voyager",
+      "name": "CARTO Voyager",
+      "category": "basemap",
+      "provider": "CARTO",
+      "service_type": "XYZ",
+      "url": "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap, © CARTO"
+    },
+    {
+      "id": "opentopomap",
+      "name": "OpenTopoMap (relief)",
+      "category": "relief",
+      "provider": "OpenTopoMap",
+      "service_type": "XYZ",
+      "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 17
+      },
+      "license": "CC-BY-SA",
+      "coverage": "monde",
+      "attribution": "© OpenTopoMap (CC-BY-SA)"
+    },
+    {
+      "id": "osm-hot",
+      "name": "OSM Humanitarian (HOT)",
+      "category": "basemap",
+      "provider": "HOT",
+      "service_type": "XYZ",
+      "url": "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap, HOT"
+    },
+    {
+      "id": "esri-world-imagery",
+      "name": "ESRI World Imagery (satellite)",
+      "category": "satellite",
+      "provider": "Esri",
+      "service_type": "XYZ",
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 19
+      },
+      "license": "Esri (usage attribué)",
+      "coverage": "monde",
+      "attribution": "Esri, Maxar, Earthstar Geographics"
+    },
+    {
+      "id": "esri-hillshade",
+      "name": "ESRI World Hillshade (relief ombré)",
+      "category": "relief",
+      "provider": "Esri",
+      "service_type": "XYZ",
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "Esri (usage attribué)",
+      "coverage": "monde",
+      "attribution": "Esri"
+    },
+    {
+      "id": "esri-natgeo",
+      "name": "ESRI NatGeo World Map",
+      "category": "basemap",
+      "provider": "Esri",
+      "service_type": "XYZ",
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "Esri (usage attribué)",
+      "coverage": "monde",
+      "attribution": "Esri, National Geographic"
+    },
+    {
+      "id": "s2cloudless",
+      "name": "Sentinel-2 cloudless (EOX)",
+      "category": "satellite",
+      "provider": "EOX",
+      "service_type": "XYZ",
+      "url": "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg",
+      "params": {
+        "zmax": 14
+      },
+      "license": "CC-BY-NC-SA 4.0",
+      "coverage": "monde",
+      "attribution": "Sentinel-2 cloudless by EOX"
+    },
+    {
+      "id": "esa-worldcover",
+      "name": "ESA WorldCover 10 m (occupation du sol)",
+      "category": "occupation_sol",
+      "provider": "ESA / Terrascope",
+      "service_type": "WMS",
+      "url": "https://services.terrascope.be/wms/v2",
+      "params": {
+        "layers": "WORLDCOVER_2021_MAP",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "CC-BY 4.0",
+      "coverage": "monde",
+      "attribution": "© ESA WorldCover 2021"
+    },
+    {
+      "id": "ign-plan",
+      "name": "IGN Plan v2 (France)",
+      "category": "france",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMTS",
+      "url": "https://data.geopf.fr/wmts",
+      "params": {
+        "layer": "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
+        "tileMatrixSet": "PM",
+        "format": "image/png",
+        "style": "normal"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / Géoplateforme"
+    },
+    {
+      "id": "ign-ortho",
+      "name": "IGN Orthophotos (France)",
+      "category": "france",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMTS",
+      "url": "https://data.geopf.fr/wmts",
+      "params": {
+        "layer": "ORTHOIMAGERY.ORTHOPHOTOS",
+        "tileMatrixSet": "PM",
+        "format": "image/jpeg",
+        "style": "normal"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / Géoplateforme"
+    },
+    {
+      "id": "ign-cadastre",
+      "name": "Cadastre (PCI, France)",
+      "category": "france",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMTS",
+      "url": "https://data.geopf.fr/wmts",
+      "params": {
+        "layer": "CADASTRALPARCELS.PARCELLAIRE_EXPRESS",
+        "tileMatrixSet": "PM",
+        "format": "image/png",
+        "style": "normal"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / DGFiP"
+    },
+    {
+      "id": "ign-scan25",
+      "name": "IGN Cartes topo (SCAN 25, France)",
+      "category": "france",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMTS",
+      "url": "https://data.geopf.fr/wmts",
+      "params": {
+        "layer": "GEOGRAPHICALGRIDSYSTEMS.MAPS",
+        "tileMatrixSet": "PM",
+        "format": "image/jpeg",
+        "style": "normal"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / Géoplateforme"
+    },
+    {
+      "id": "carto-labels",
+      "name": "CARTO labels seuls (overlay)",
+      "category": "labels",
+      "provider": "CARTO",
+      "service_type": "XYZ",
+      "url": "https://a.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap, © CARTO"
+    },
+    {
+      "id": "cyclosm",
+      "name": "CyclOSM (cyclable)",
+      "category": "basemap",
+      "provider": "OpenStreetMap France",
+      "service_type": "XYZ",
+      "url": "https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "esri-world-topo",
+      "name": "ESRI World Topo",
+      "category": "basemap",
+      "provider": "Esri",
+      "service_type": "XYZ",
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 19
+      },
+      "license": "Esri (usage attribué)",
+      "coverage": "monde",
+      "attribution": "Esri"
+    },
+    {
+      "id": "esri-ocean",
+      "name": "ESRI Ocean Basemap",
+      "category": "basemap",
+      "provider": "Esri",
+      "service_type": "XYZ",
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "Esri (usage attribué)",
+      "coverage": "monde",
+      "attribution": "Esri"
+    },
+    {
+      "id": "nasa-modis-truecolor",
+      "name": "NASA GIBS MODIS True Color",
+      "category": "satellite",
+      "provider": "NASA GIBS",
+      "service_type": "XYZ",
+      "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpeg",
+      "params": {
+        "zmax": 9
+      },
+      "license": "NASA (usage libre)",
+      "coverage": "monde",
+      "attribution": "NASA GIBS"
+    },
+    {
+      "id": "nasa-viirs-blackmarble",
+      "name": "NASA VIIRS Black Marble (nuit)",
+      "category": "satellite",
+      "provider": "NASA GIBS",
+      "service_type": "XYZ",
+      "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png",
+      "params": {
+        "zmax": 8
+      },
+      "license": "NASA (usage libre)",
+      "coverage": "monde",
+      "attribution": "NASA GIBS"
+    },
+    {
+      "id": "gmrt-relief",
+      "name": "GMRT Relief (GeoMapApp)",
+      "category": "relief",
+      "provider": "LDEO / GeoMapApp",
+      "service_type": "WMS",
+      "url": "https://www.gmrt.org/services/mapserver/wms_merc",
+      "params": {
+        "layers": "topo",
+        "format": "image/jpeg",
+        "crs": "EPSG:3857"
+      },
+      "license": "Libre (GMRT)",
+      "coverage": "monde",
+      "attribution": "GMRT / LDEO"
+    },
+    {
+      "id": "osm-france",
+      "name": "OSM France (rendu FR)",
+      "category": "basemap",
+      "provider": "OpenStreetMap France",
+      "service_type": "XYZ",
+      "url": "https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "osm-de",
+      "name": "OSM Allemagne (rendu DE)",
+      "category": "basemap",
+      "provider": "OpenStreetMap DE",
+      "service_type": "XYZ",
+      "url": "https://a.tile.openstreetmap.de/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    {
+      "id": "ign-pentes",
+      "name": "IGN Pentes (France)",
+      "category": "relief",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMTS",
+      "url": "https://data.geopf.fr/wmts",
+      "params": {
+        "layer": "ELEVATION.SLOPES",
+        "tileMatrixSet": "PM",
+        "format": "image/png",
+        "style": "normal"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / Géoplateforme"
+    },
+    {
+      "id": "ign-courbes",
+      "name": "IGN Courbes de niveau (France)",
+      "category": "relief",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMS",
+      "url": "https://data.geopf.fr/wms-r",
+      "params": {
+        "layers": "ELEVATION.CONTOUR",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / Géoplateforme"
+    },
+    {
+      "id": "ign-admin",
+      "name": "IGN Limites administratives (France)",
+      "category": "france",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMS",
+      "url": "https://data.geopf.fr/wms-v",
+      "params": {
+        "layers": "ADMINEXPRESS-COG-CARTO.LATEST",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / Géoplateforme"
+    },
+    {
+      "id": "ign-parcellaire-wms",
+      "name": "IGN Parcellaire vecteur (WMS, France)",
+      "category": "france",
+      "provider": "IGN / Géoplateforme",
+      "service_type": "WMS",
+      "url": "https://data.geopf.fr/wms-v",
+      "params": {
+        "layers": "CADASTRALPARCELS.PARCELLAIRE_EXPRESS",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "© IGN-F / DGFiP"
+    },
+    {
+      "id": "ign-communes-wfs",
+      "name": "IGN Communes (vecteur WFS, France)",
+      "category": "france",
+      "provider": "IGN / Geoplateforme",
+      "service_type": "WFS",
+      "url": "https://data.geopf.fr/wfs",
+      "params": {
+        "layer": "ADMINEXPRESS-COG-CARTO.LATEST:commune",
+        "crs": "EPSG:4326",
+        "version": "2.0.0"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "IGN-F / Geoplateforme"
+    },
+    {
+      "id": "ign-rpg-wfs",
+      "name": "RPG parcelles agricoles (vecteur WFS, France)",
+      "category": "france",
+      "provider": "IGN / Geoplateforme",
+      "service_type": "WFS",
+      "url": "https://data.geopf.fr/wfs",
+      "params": {
+        "layer": "RPG.LATEST:parcelles_graphiques",
+        "crs": "EPSG:4326",
+        "version": "2.0.0"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "IGN-F"
+    },
+    {
+      "id": "ign-parcelles-wfs",
+      "name": "Cadastre parcelles (vecteur WFS, France)",
+      "category": "france",
+      "provider": "IGN / DGFiP",
+      "service_type": "WFS",
+      "url": "https://data.geopf.fr/wfs",
+      "params": {
+        "layer": "CADASTRALPARCELS.PARCELLAIRE_EXPRESS:parcelle",
+        "crs": "EPSG:4326",
+        "version": "2.0.0"
+      },
+      "license": "Licence Ouverte Etalab",
+      "coverage": "France",
+      "attribution": "IGN-F / DGFiP"
+    },
+    {
+      "id": "nasa-gibs-modis-false",
+      "name": "NASA GIBS MODIS False Color",
+      "category": "satellite",
+      "provider": "NASA GIBS",
+      "service_type": "XYZ",
+      "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_Bands721/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpeg",
+      "params": {
+        "zmax": 9
+      },
+      "license": "NASA (usage libre)",
+      "coverage": "monde",
+      "attribution": "NASA GIBS"
+    },
+    {
+      "id": "copernicus-dem-wmts",
+      "name": "Copernicus DEM 30 m (WMTS)",
+      "category": "relief",
+      "provider": "Copernicus",
+      "service_type": "WMTS",
+      "url": "https://terrain.esa.int/tms/1.0.0/copdem30m@EPSG%3A3857@terrain/{z}/{x}/{y}.png",
+      "params": {
+        "tileMatrixSet": "GoogleMapsCompatible",
+        "format": "image/png"
+      },
+      "license": "Copernicus (usage libre)",
+      "coverage": "monde",
+      "attribution": "Copernicus DEM / ESA"
+    },
+    {
+      "id": "openaerialmap",
+      "name": "OpenAerialMap (drones/satellites)",
+      "category": "satellite",
+      "provider": "OpenAerialMap",
+      "service_type": "XYZ",
+      "url": "https://tiles.openaerialmap.org/ourl/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 22
+      },
+      "license": "CC-BY (contributions)",
+      "coverage": "monde",
+      "attribution": "OpenAerialMap contributors"
+    },
+    {
+      "id": "gebco-bathymetry",
+      "name": "GEBCO Bathymétrie mondiale",
+      "category": "relief",
+      "provider": "GEBCO",
+      "service_type": "WMS",
+      "url": "https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv",
+      "params": {
+        "layers": "GEBCO_LATEST",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Libre (GEBCO)",
+      "coverage": "monde",
+      "attribution": "GEBCO"
+    },
+    {
+      "id": "usgs-world-imagery",
+      "name": "USGS World Imagery",
+      "category": "satellite",
+      "provider": "USGS",
+      "service_type": "XYZ",
+      "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "USGS (usage libre)",
+      "coverage": "monde",
+      "attribution": "USGS"
+    },
+    {
+      "id": "naturalearth-1-10m",
+      "name": "Natural Earth 1:10M (vecteur)",
+      "category": "basemap",
+      "provider": "Natural Earth",
+      "service_type": "WMS",
+      "url": "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries.zip",
+      "params": {
+        "format": "application/zip"
+      },
+      "license": "Public Domain (CC0)",
+      "coverage": "monde",
+      "attribution": "Natural Earth"
+    },
+    {
+      "id": "osm-transport",
+      "name": "OSM Transport (overlay)",
+      "category": "labels",
+      "provider": "OSM",
+      "service_type": "XYZ",
+      "url": "https://a.tile.thunderforest.com/transport/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "Thunderforest / OSM"
+    },
+    {
+      "id": "sentinel-2-l2a-view",
+      "name": "Sentinel-2 L2A Viewer (EO Browser)",
+      "category": "satellite",
+      "provider": "Sinergise / ESA",
+      "service_type": "WMS",
+      "url": "https://services.sentinel-hub.com/ogc/wms/",
+      "params": {
+        "layers": "TRUE_COLOR",
+        "format": "image/jpeg",
+        "crs": "EPSG:3857"
+      },
+      "license": "Copernicus (usage libre)",
+      "coverage": "monde",
+      "attribution": "Copernicus / Sinergise"
+    },
+    {
+      "id": "copernicus-land-cover",
+      "name": "Copernicus Land Cover (LC)",
+      "category": "occupation_sol",
+      "provider": "Copernicus",
+      "service_type": "WMS",
+      "url": "https://wms.vito.be/opendata/hub/",
+      "params": {
+        "layers": "WORLDCOVER_2021",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Copernicus (usage libre)",
+      "coverage": "monde",
+      "attribution": "Copernicus Land Monitoring Service"
+    },
+    {
+      "id": "openweathermap-temp",
+      "name": "OpenWeatherMap Température",
+      "category": "meteo",
+      "provider": "OpenWeatherMap",
+      "service_type": "XYZ",
+      "url": "https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "CC-BY-SA 4.0",
+      "coverage": "monde",
+      "attribution": "OpenWeatherMap"
+    },
+    {
+      "id": "stamen-toner",
+      "name": "Stamen Toner (B&W)",
+      "category": "basemap",
+      "provider": "Stadia",
+      "service_type": "XYZ",
+      "url": "https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 20
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "Stamen / Stadia Maps"
+    },
+    {
+      "id": "stamen-watercolor",
+      "name": "Stamen Watercolor",
+      "category": "basemap",
+      "provider": "Stadia",
+      "service_type": "XYZ",
+      "url": "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg",
+      "params": {
+        "zmax": 18
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "Stamen / Stadia Maps"
+    },
+    {
+      "id": "stamen-terrain",
+      "name": "Stamen Terrain",
+      "category": "relief",
+      "provider": "Stadia",
+      "service_type": "XYZ",
+      "url": "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 18
+      },
+      "license": "CC-BY (OSM)",
+      "coverage": "monde",
+      "attribution": "Stamen / Stadia Maps"
+    },
+    {
+      "id": "jawg-streets",
+      "name": "Jawg Streets",
+      "category": "basemap",
+      "provider": "Jawg",
+      "service_type": "XYZ",
+      "url": "https://tile.jawg.io/jawg-streets/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 22
+      },
+      "license": "Jawg (usage attribue)",
+      "coverage": "monde",
+      "attribution": "Jawg"
+    },
+    {
+      "id": "jawg-light",
+      "name": "Jawg Light",
+      "category": "basemap",
+      "provider": "Jawg",
+      "service_type": "XYZ",
+      "url": "https://tile.jawg.io/jawg-light/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 22
+      },
+      "license": "Jawg (usage attribue)",
+      "coverage": "monde",
+      "attribution": "Jawg"
+    },
+    {
+      "id": "wikimedia",
+      "name": "Wikimedia Maps",
+      "category": "basemap",
+      "provider": "Wikimedia",
+      "service_type": "XYZ",
+      "url": "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "Wikimedia / OSM"
+    },
+    {
+      "id": "waymarked-hiking",
+      "name": "Waymarked Trails (randonnee)",
+      "category": "basemap",
+      "provider": "Waymarked Trails",
+      "service_type": "XYZ",
+      "url": "https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 18
+      },
+      "license": "CC-BY-SA",
+      "coverage": "monde",
+      "attribution": "Waymarked Trails"
+    },
+    {
+      "id": "waymarked-cycling",
+      "name": "Waymarked Trails (velo)",
+      "category": "basemap",
+      "provider": "Waymarked Trails",
+      "service_type": "XYZ",
+      "url": "https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 18
+      },
+      "license": "CC-BY-SA",
+      "coverage": "monde",
+      "attribution": "Waymarked Trails"
+    },
+    {
+      "id": "openseamap",
+      "name": "OpenSeaMap (maritime)",
+      "category": "basemap",
+      "provider": "OpenSeaMap",
+      "service_type": "XYZ",
+      "url": "https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 18
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "OpenSeaMap"
+    },
+    {
+      "id": "openrailwaymap",
+      "name": "OpenRailwayMap",
+      "category": "basemap",
+      "provider": "OpenRailwayMap",
+      "service_type": "XYZ",
+      "url": "https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "OpenRailwayMap"
+    },
+    {
+      "id": "bing-maps",
+      "name": "Bing Maps (road)",
+      "category": "basemap",
+      "provider": "Microsoft",
+      "service_type": "XYZ",
+      "url": "https://ecn.t0.tiles.virtualearth.net/tiles/r{quadkey}.jpeg?g=1",
+      "params": {
+        "zmax": 19
+      },
+      "license": "Microsoft (usage libre)",
+      "coverage": "monde",
+      "attribution": "Bing Maps"
+    },
+    {
+      "id": "mapbox-satellite",
+      "name": "Mapbox Satellite",
+      "category": "satellite",
+      "provider": "Mapbox",
+      "service_type": "XYZ",
+      "url": "https://a.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "Mapbox (usage attribue)",
+      "coverage": "monde",
+      "attribution": "Mapbox"
+    },
+    {
+      "id": "here-satellite",
+      "name": "HERE Satellite",
+      "category": "satellite",
+      "provider": "HERE",
+      "service_type": "XYZ",
+      "url": "https://aerial.maps.ls.hereapi.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8",
+      "params": {
+        "zmax": 19
+      },
+      "license": "HERE (usage attribue)",
+      "coverage": "monde",
+      "attribution": "HERE"
+    },
+    {
+      "id": "planet-satellite",
+      "name": "Planet Labs Satellite",
+      "category": "satellite",
+      "provider": "Planet",
+      "service_type": "WMS",
+      "url": "https://tiles.planet.com/basemaps/v1/planet-tiles/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 18
+      },
+      "license": "Planet (usage attribue)",
+      "coverage": "monde",
+      "attribution": "Planet Labs"
+    },
+    {
+      "id": "terrestris-osm",
+      "name": "Terrestris OSM",
+      "category": "basemap",
+      "provider": "Terrestris",
+      "service_type": "WMS",
+      "url": "https://ows.terrestris.de/osm/service",
+      "params": {
+        "layers": "OSM-WMS",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "Terrestris / OSM"
+    },
+    {
+      "id": "terrestris-topo",
+      "name": "Terrestris Topo",
+      "category": "basemap",
+      "provider": "Terrestris",
+      "service_type": "WMS",
+      "url": "https://ows.terrestris.de/osm/service",
+      "params": {
+        "layers": "TOPO-WMS",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "Terrestris / OSM"
+    },
+    {
+      "id": "mundialis-osm",
+      "name": "Mundialis OSM",
+      "category": "basemap",
+      "provider": "Mundialis",
+      "service_type": "WMS",
+      "url": "https://ows.mundialis.de/services/service",
+      "params": {
+        "layers": "OSM-WMS",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "Mundialis / OSM"
+    },
+    {
+      "id": "mundialis-srtm",
+      "name": "Mundialis SRTM (relief)",
+      "category": "relief",
+      "provider": "Mundialis",
+      "service_type": "WMS",
+      "url": "https://ows.mundialis.de/services/service",
+      "params": {
+        "layers": "SRTM30-Colored",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Libre (NASA)",
+      "coverage": "monde",
+      "attribution": "NASA SRTM / Mundialis"
+    },
+    {
+      "id": "swisstopo",
+      "name": "Swisstopo (Suisse)",
+      "category": "basemap",
+      "provider": "Swisstopo",
+      "service_type": "WMTS",
+      "url": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
+      "params": {
+        "zmax": 17
+      },
+      "license": "Swisstopo (usage libre)",
+      "coverage": "Suisse",
+      "attribution": "Swisstopo"
+    },
+    {
+      "id": "ordnance-survey",
+      "name": "Ordnance Survey (Royaume-Uni)",
+      "category": "basemap",
+      "provider": "OS",
+      "service_type": "XYZ",
+      "url": "https://api.os.uk/maps/raster/v1/zxy/Leisure_27700/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 16
+      },
+      "license": "OS (usage attribue)",
+      "coverage": "Royaume-Uni",
+      "attribution": "Ordnance Survey"
+    },
+    {
+      "id": "ign-spain",
+      "name": "IGN Espagne (PNOA)",
+      "category": "satellite",
+      "provider": "IGN Spain",
+      "service_type": "WMS",
+      "url": "https://www.ign.es/wms-inspire/pnoa-ma",
+      "params": {
+        "layers": "OI.OrthoimageCoverage",
+        "format": "image/jpeg",
+        "crs": "EPSG:3857"
+      },
+      "license": "Libre (IGN ES)",
+      "coverage": "Espagne",
+      "attribution": "IGN Spain"
+    },
+    {
+      "id": "ign-italy",
+      "name": "IGN Italie (ortofoto)",
+      "category": "satellite",
+      "provider": "IGM Italy",
+      "service_type": "WMS",
+      "url": "https://wms.cartografia.agenziaentrate.gov.it/openags111/wms",
+      "params": {
+        "layers": " Ortofoto2000",
+        "format": "image/jpeg",
+        "crs": "EPSG:3857"
+      },
+      "license": "Libre (IT)",
+      "coverage": "Italie",
+      "attribution": "Agenzia Entrate"
+    },
+    {
+      "id": "geoland-basemap",
+      "name": "GeoLand Basemap (Autriche)",
+      "category": "basemap",
+      "provider": "GeoLand",
+      "service_type": "WMTS",
+      "url": "https://maps.wien.gv.at/basemap/geolandbasemap/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "GeoLand (usage libre)",
+      "coverage": "Autriche",
+      "attribution": "GeoLand"
+    },
+    {
+      "id": "kartverket",
+      "name": "Kartverket (Norvege)",
+      "category": "basemap",
+      "provider": "Kartverket",
+      "service_type": "WMTS",
+      "url": "https://cache.kartverket.no/v1/wmts",
+      "params": {
+        "layer": "topo4",
+        "tileMatrixSet": "default028mm",
+        "format": "image/png"
+      },
+      "license": "Kartverket (usage libre)",
+      "coverage": "Norvege",
+      "attribution": "Kartverket"
+    },
+    {
+      "id": "linz",
+      "name": "LINZ (Nouvelle-Zelande)",
+      "category": "basemap",
+      "provider": "LINZ",
+      "service_type": "XYZ",
+      "url": "https://tiles.maps.linz.io/nz_aerial_basemaps/NZ_Aerial_Imagery/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 19
+      },
+      "license": "LINZ (CC-BY)",
+      "coverage": "Nouvelle-Zelande",
+      "attribution": "LINZ"
+    },
+    {
+      "id": "ga-australia",
+      "name": "Geoscience Australia",
+      "category": "basemap",
+      "provider": "GA",
+      "service_type": "XYZ",
+      "url": "https://services.ga.gov.au/gis/rest/services/NationalMap_Color_BaseMap/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "GA (CC-BY)",
+      "coverage": "Australie",
+      "attribution": "Geoscience Australia"
+    },
+    {
+      "id": "usgs-topo",
+      "name": "USGS National Map (topo)",
+      "category": "basemap",
+      "provider": "USGS",
+      "service_type": "XYZ",
+      "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "USGS (usage libre)",
+      "coverage": "USA",
+      "attribution": "USGS"
+    },
+    {
+      "id": "usgs-shaded",
+      "name": "USGS Shaded Relief",
+      "category": "relief",
+      "provider": "USGS",
+      "service_type": "XYZ",
+      "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}",
+      "params": {
+        "zmax": 16
+      },
+      "license": "USGS (usage libre)",
+      "coverage": "USA",
+      "attribution": "USGS"
+    },
+    {
+      "id": "strava-heatmap",
+      "name": "Strava Heatmap (activite)",
+      "category": "basemap",
+      "provider": "Strava",
+      "service_type": "XYZ",
+      "url": "https://heatmap-external-b.strava.com/tiles/ride/bluered/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 16
+      },
+      "license": "Strava (usage libre)",
+      "coverage": "monde",
+      "attribution": "Strava"
+    },
+    {
+      "id": "soilgrids",
+      "name": "SoilGrids (sol mondial)",
+      "category": "occupation_sol",
+      "provider": "ISRIC",
+      "service_type": "WMS",
+      "url": "https://maps.isric.org/mapserv?map=/map/wosis_latest.map",
+      "params": {
+        "layers": "wosis_latest",
+        "format": "image/png",
+        "crs": "EPSG:3857"
+      },
+      "license": "CC-BY 4.0",
+      "coverage": "monde",
+      "attribution": "ISRIC / SoilGrids"
+    },
+    {
+      "id": "world-glacier",
+      "name": "World Glacier Inventory",
+      "category": "relief",
+      "provider": "NSIDC",
+      "service_type": "WMS",
+      "url": "https://nsidc.org/cgi-bin/atlas_north",
+      "params": {
+        "layers": "glaciers",
+        "format": "image/png",
+        "crs": "EPSG:4326"
+      },
+      "license": "NSIDC",
+      "coverage": "monde",
+      "attribution": "NSIDC"
+    },
+    {
+      "id": "global-forest-watch",
+      "name": "Global Forest Watch (perte foret)",
+      "category": "satellite",
+      "provider": "GFW / WRI",
+      "service_type": "XYZ",
+      "url": "https://tiles.globalforestwatch.org/umd_tree_loss_loss_year/v20220816/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 12
+      },
+      "license": "CC-BY 4.0",
+      "coverage": "monde",
+      "attribution": "Global Forest Watch"
+    },
+    {
+      "id": "fire-information",
+      "name": "NASA FIRMS (feux actifs)",
+      "category": "satellite",
+      "provider": "NASA",
+      "service_type": "WMS",
+      "url": "https://firms.modaps.eosdis.nasa.gov/wms/viirs/",
+      "params": {
+        "layers": "fires",
+        "format": "image/png",
+        "crs": "EPSG:4326"
+      },
+      "license": "NASA",
+      "coverage": "monde",
+      "attribution": "NASA FIRMS"
+    },
+    {
+      "id": "osm-building",
+      "name": "OSM Buildings",
+      "category": "basemap",
+      "provider": "OSM",
+      "service_type": "XYZ",
+      "url": "https://a.data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.png",
+      "params": {
+        "zmax": 18
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "OSM Buildings"
+    },
+    {
+      "id": "overpass-api",
+      "name": "Overpass API (vecteur OSM)",
+      "category": "basemap",
+      "provider": "OSM",
+      "service_type": "WFS",
+      "url": "https://overpass-api.de/api/interpreter",
+      "params": {
+        "format": "geojson",
+        "crs": "EPSG:4326"
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "OpenStreetMap"
+    },
+    {
+      "id": "osm-boundaries",
+      "name": "OSM Administrative Boundaries",
+      "category": "basemap",
+      "provider": "OSM",
+      "service_type": "WFS",
+      "url": "https://osm-boundaries.com/Api/Areas",
+      "params": {
+        "format": "geojson",
+        "crs": "EPSG:4326"
+      },
+      "license": "ODbL",
+      "coverage": "monde",
+      "attribution": "OSM Boundaries"
+    },
+    {
+      "id": "hydrosheds",
+      "name": "HydroSHEDS (bassins versants)",
+      "category": "eau",
+      "provider": "WWF",
+      "service_type": "WMS",
+      "url": "https://geoapps.icpac.net/geoserver/wms",
+      "params": {
+        "layers": "hydrosheds_basins",
+        "format": "image/png",
+        "crs": "EPSG:4326"
+      },
+      "license": "Libre (WWF)",
+      "coverage": "monde",
+      "attribution": "WWF HydroSHEDS"
+    },
+    {
+      "id": "ghsl-built",
+      "name": "GHSL Built-up Areas (JRC)",
+      "category": "occupation_sol",
+      "provider": "JRC / EC",
+      "service_type": "WMS",
+      "url": "https://jeodpp.jrc.ec.europa.eu/arcgis/rest/services/GHSL/GHS_BUILT_S2combo_BuiltUp_2018/ImageServer/exportImage",
+      "params": {
+        "format": "png",
+        "crs": "EPSG:3857"
+      },
+      "license": "Libre (EC)",
+      "coverage": "monde",
+      "attribution": "JRC / GHSL"
+    },
+    {
+      "id": "ecoregions",
+      "name": "WWF Terrestrial Ecoregions",
+      "category": "occupation_sol",
+      "provider": "WWF",
+      "service_type": "WFS",
+      "url": "https://ecoregions.appspot.com/data/ecoregions.geojson",
+      "params": {
+        "format": "geojson",
+        "crs": "EPSG:4326"
+      },
+      "license": "WWF",
+      "coverage": "monde",
+      "attribution": "WWF / TNC"
+    },
+    {
+      "id": "geoboundaries",
+      "name": "geoBoundaries (admin mondial)",
+      "category": "basemap",
+      "provider": "University of Wisconsin",
+      "service_type": "WFS",
+      "url": "https://www.geoboundaries.org/api.html",
+      "params": {
+        "format": "geojson",
+        "crs": "EPSG:4326"
+      },
+      "license": "CC-BY 4.0",
+      "coverage": "monde",
+      "attribution": "geoBoundaries"
+    },
+    {
+      "id": "naturalearth-rivers",
+      "name": "Natural Earth Rivers",
+      "category": "eau",
+      "provider": "Natural Earth",
+      "service_type": "WFS",
+      "url": "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_rivers_lake_centerlines.zip",
+      "params": {
+        "format": "application/zip",
+        "crs": "EPSG:4326"
+      },
+      "license": "Public Domain",
+      "coverage": "monde",
+      "attribution": "Natural Earth"
+    },
+    {
+      "id": "naturalearth-lakes",
+      "name": "Natural Earth Lakes",
+      "category": "eau",
+      "provider": "Natural Earth",
+      "service_type": "WFS",
+      "url": "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_lakes.zip",
+      "params": {
+        "format": "application/zip",
+        "crs": "EPSG:4326"
+      },
+      "license": "Public Domain",
+      "coverage": "monde",
+      "attribution": "Natural Earth"
+    }
+  ]
+}
