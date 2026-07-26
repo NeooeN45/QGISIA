@@ -665,9 +665,16 @@ console.log(`Exporté: ${result.filePath} (${result.size} octets)`);
 
 ### Fonctions principales
 
-#### `runScriptDetailed(script: string, options?: { requireConfirmation?: boolean }): Promise<ScriptExecutionResult | null>`
-- Exécute un script Python dans QGIS
+> **Sécurité** — toute requête `/api/**` exige le jeton du bridge
+> (`X-QGISIA-Token`), une origine locale et `Content-Type: application/json`.
+> Voir [../security/BRIDGE_SECURITY.md](../security/BRIDGE_SECURITY.md).
+
+#### `runScriptDetailed(script: string): Promise<ScriptExecutionResult | null>`
+- Exécute un script dans le **bac à sable hors-processus** (ni fichier, ni
+  réseau, ni accès au projet QGIS), après confirmation de l'utilisateur
 - Retourne un résultat détaillé avec succès/échec
+- L'option `requireConfirmation` a été **supprimée** : la confirmation est
+  inconditionnelle et le bridge répond `400` si le champ est envoyé
 
 #### `pickQgisFile(fileFilter?: string, title?: string): Promise<string | null>`
 - Ouvre un dialogue de sélection de fichier QGIS
@@ -676,8 +683,17 @@ console.log(`Exporté: ${result.filePath} (${result.size} octets)`);
 #### `isQgisAvailable(): boolean`
 - Vérifie si le bridge QGIS est disponible
 
-#### `runScript(script: string, options?: { requireConfirmation?: boolean }): Promise<string | null>`
-- Exécute un script Python (version simplifiée)
+#### `runScript(script: string): Promise<string | null>`
+- Exécute un script dans le bac à sable (version simplifiée)
+
+#### Modifier le projet QGIS — `POST /api/qgis/runCommands`
+- Un script en bac à sable **ne peut pas** muter la session QGIS
+- Les mutations passent par l'API de commandes autorisées, typée et validée
+- `GET /api/qgis/listCommands` énumère les commandes disponibles
+
+#### Routes supprimées
+- `POST /api/qgis/runScriptDirect` — **supprimée** (exécutait sans
+  confirmation utilisateur ; voir le modèle de menace)
 
 ### Exemple d'utilisation
 

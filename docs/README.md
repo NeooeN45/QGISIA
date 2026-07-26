@@ -10,6 +10,11 @@ Conception technique du plugin et du backend agentique.
 - [API_DOCUMENTATION.md](architecture/API_DOCUMENTATION.md) — endpoints HTTP du bridge
 - [SPRINT_1_ARCHITECTURE.md](architecture/SPRINT_1_ARCHITECTURE.md) — décisions d'architecture sprint 1
 
+## 🔒 security/
+Modèle de menace et contrat de sécurité du bridge local.
+- [THREAT_MODEL.md](security/THREAT_MODEL.md) — modèle de menace avant/après, attaquants couverts, limites assumées
+- [BRIDGE_SECURITY.md](security/BRIDGE_SECURITY.md) — contrat d'accès du bridge (jeton, Origin, Host, MIME), bac à sable, API de commandes
+
 ## 📖 guides/
 Installation et utilisation.
 - [PLUGIN_INSTALLATION.md](guides/PLUGIN_INSTALLATION.md) — installation du plugin QGIS

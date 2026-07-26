@@ -11,6 +11,7 @@ import http.client
 import io
 import json
 import os
+import re
 import socketserver
 import sys
 import threading
@@ -280,6 +281,44 @@ def test_token_never_travels_in_the_url():
     html = bh.inject_token_meta("<head></head>", "SECRET123")
     assert "?token=" not in html
     assert "&token=" not in html
+
+
+# ── Cohérence avec la page réellement livrée ─────────────────────────────────
+
+_WEB_INDEX = os.path.join(
+    os.path.dirname(__file__), "..", "QGISIA2", "web", "index.html"
+)
+
+
+@pytest.mark.skipif(not os.path.isfile(_WEB_INDEX), reason="build web absent")
+def test_shipped_page_accepts_the_token_injection():
+    # Vérifie sur la page RÉELLEMENT livrée (et non sur un HTML de test) que
+    # l'injection tombe bien dans le <head> et avant le script de l'app.
+    with open(_WEB_INDEX, "r", encoding="utf-8") as handle:
+        html = handle.read()
+    out = bh.inject_token_meta(html, "SECRET123")
+    assert f'content="SECRET123"' in out
+    assert out.index(bh.TOKEN_META_NAME) < out.index("<script")
+
+
+@pytest.mark.skipif(not os.path.isfile(_WEB_INDEX), reason="build web absent")
+def test_shipped_bundle_sends_the_token_header():
+    # Régression majeure possible : livrer un bundle JS antérieur au
+    # durcissement ferait échouer toutes les requêtes en 401. On vérifie que
+    # le bundle référencé par la page connaît bien l'en-tête et la balise.
+    web_dir = os.path.dirname(_WEB_INDEX)
+    with open(_WEB_INDEX, "r", encoding="utf-8") as handle:
+        page = handle.read()
+    referenced = re.findall(r'assets/(index-[A-Za-z0-9_-]+\.js)', page)
+    assert referenced, "aucun bundle principal référencé par index.html"
+
+    for name in referenced:
+        path = os.path.join(web_dir, "assets", name)
+        assert os.path.isfile(path), f"bundle référencé mais absent : {name}"
+        with open(path, "r", encoding="utf-8", errors="replace") as handle:
+            bundle = handle.read()
+        assert bh.TOKEN_HEADER in bundle, f"{name} n'envoie pas {bh.TOKEN_HEADER}"
+        assert bh.TOKEN_META_NAME in bundle, f"{name} ne lit pas la balise meta"
 
 
 # ── Intégration : vrai serveur loopback, dispatcher espionné ─────────────────
