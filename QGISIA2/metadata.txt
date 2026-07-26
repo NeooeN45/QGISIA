@@ -2,7 +2,7 @@
 name=QGISIA2
 description=Assistant SIG IA pour QGIS avec services officiels, outils raster et lancement navigateur automatique
 about=Une extension QGIS qui lance automatiquement l'interface QGISAI+ dans votre navigateur par defaut. Combine chat SIG, services geospatiaux officiels (IGN, API Carto, Copernicus), automatisation PyQGIS et bridge QGIS via HTTP. Compatible QGIS 3.16+ et QGIS 4.x (PyQt5/PyQt6).
-version=3.4
+version=3.10
 qgisMinimumVersion=3.16
 qgisMaximumVersion=4.99
 author=QGISAI+
