@@ -65,7 +65,8 @@ export default function CodeBlock({ language, value }: CodeBlockProps) {
   };
 
   const runInQgis = async () => {
-    const status = await runScript(value, { requireConfirmation: false });
+    // Exécution toujours confirmée par l'utilisateur (dialogue QGIS).
+    const status = await runScript(value);
 
     if (status) {
       toast.success(status);

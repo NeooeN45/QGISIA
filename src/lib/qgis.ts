@@ -115,13 +115,10 @@ interface RawQgisBridge {
     callback?: QgisCallback<string>,
   ) => string | void;
   runScript?: (script: string, callback?: QgisCallback<string>) => string | void;
-  runScriptDirect?: (
-    script: string,
-    callback?: QgisCallback<string>,
-  ) => string | void;
+  // `runScriptDirect` a été retiré du bridge : c'était le seul chemin
+  // d'exécution sans confirmation utilisateur.
   runScriptDetailed?: (
     script: string,
-    requireConfirmation: boolean,
     callback?: QgisCallback<string>,
   ) => string | void;
   getLayerFields?: (
@@ -250,6 +247,34 @@ declare global {
 
 let httpBridge: RawQgisBridge | null = null;
 
+/**
+ * Nom de la balise <meta> par laquelle le plugin transmet le jeton du bridge.
+ * Doit rester aligné sur `bridge_http.TOKEN_META_NAME` côté Python.
+ */
+const BRIDGE_TOKEN_META = "qgisia-bridge-token";
+
+/** En-tête portant le jeton. Doit rester aligné sur `bridge_http.TOKEN_HEADER`. */
+const BRIDGE_TOKEN_HEADER = "X-QGISIA-Token";
+
+/**
+ * Lit le jeton injecté dans la page servie depuis 127.0.0.1.
+ *
+ * Le jeton ne transite jamais par l'URL : il n'apparaît donc ni dans
+ * l'historique, ni dans un en-tête `Referer`. Une page tierce ne peut pas le
+ * lire (politique d'origine), et un rebinding DNS est arrêté côté serveur par
+ * le contrôle de l'en-tête `Host`.
+ */
+function getBridgeToken(): string {
+  try {
+    const meta = document.querySelector<HTMLMetaElement>(
+      `meta[name="${BRIDGE_TOKEN_META}"]`,
+    );
+    return meta?.content ?? "";
+  } catch {
+    return "";
+  }
+}
+
 function isHttpBridgeEnabled(): boolean {
   try {
     return new URLSearchParams(window.location.search).get("bridge") === "http";
@@ -268,6 +293,10 @@ async function readHttpBridgeResult<T>(
   try {
     const response = await fetch(input, {
       ...init,
+      headers: {
+        ...(init?.headers as Record<string, string> | undefined),
+        [BRIDGE_TOKEN_HEADER]: getBridgeToken(),
+      },
       signal: controller.signal,
     });
     if (!response.ok) {
@@ -366,17 +395,13 @@ function getHttpBridge(): RawQgisBridge | undefined {
         }
       });
     },
-    runScriptDirect: (script, callback) => {
-      void postJsonSlow<string>("/api/qgis/runScriptDirect", { script }).then((result) => {
-        if (callback) {
-          callback(typeof result === "string" ? result : "");
-        }
-      });
-    },
-    runScriptDetailed: (script, requireConfirmation, callback) => {
+    // runScriptDirect a été supprimé du bridge : il exécutait sans
+    // confirmation. La confirmation est désormais inconditionnelle.
+    runScriptDetailed: (script, callback) => {
+      // `requireConfirmation` ne fait plus partie du contrat réseau : le
+      // serveur répond 400 si le champ est présent.
       void postJsonSlow<string>("/api/qgis/runScriptDetailed", {
         script,
-        requireConfirmation,
       }).then((result) => {
         if (callback) {
           callback(typeof result === "string" ? result : "");
@@ -1137,16 +1162,16 @@ export async function pickQgisFile(
   return typeof result === "string" && result.length > 0 ? result : null;
 }
 
-export async function runScript(
-  script: string,
-  options?: { requireConfirmation?: boolean },
-): Promise<string | null> {
-  const requireConfirmation = options?.requireConfirmation !== false;
-  const bridge = getBridge();
-  const bridgeMethod =
-    requireConfirmation || !bridge?.runScriptDirect
-      ? bridge?.runScript
-      : bridge.runScriptDirect;
+/**
+ * Exécute un script dans le bac à sable du plugin.
+ *
+ * L'exécution est TOUJOURS soumise à confirmation de l'utilisateur : il
+ * n'existe plus d'option pour la désactiver. Le script tourne hors du
+ * processus QGIS, sans accès au projet, aux fichiers ni au réseau — pour
+ * modifier le projet, utiliser l'API de commandes (`/api/qgis/runCommands`).
+ */
+export async function runScript(script: string): Promise<string | null> {
+  const bridgeMethod = getBridge()?.runScript;
 
   if (!bridgeMethod) {
     return null;
@@ -1163,14 +1188,12 @@ export async function runScript(
 
 export async function runScriptDetailed(
   script: string,
-  options?: { requireConfirmation?: boolean },
 ): Promise<ScriptExecutionResult | null> {
-  const requireConfirmation = options?.requireConfirmation !== false;
   const bridge = getBridge();
 
   if (bridge?.runScriptDetailed) {
     const result = await callQgisWithResult<string>(
-      (callback) => bridge.runScriptDetailed?.(script, requireConfirmation, callback),
+      (callback) => bridge.runScriptDetailed?.(script, callback),
       "",
       QGIS_SCRIPT_TIMEOUT_MS,
     );
@@ -1189,7 +1212,7 @@ export async function runScriptDetailed(
     }
   }
 
-  const legacyResult = await runScript(script, { requireConfirmation });
+  const legacyResult = await runScript(script);
   if (!legacyResult) {
     return null;
   }

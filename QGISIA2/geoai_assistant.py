@@ -28,9 +28,13 @@ except Exception:  # pragma: no cover - fallback standalone / import partiel
 try:
     from . import script_validation
     from . import bridge_http
+    from . import script_commands
+    from . import script_sandbox
 except ImportError:  # pragma: no cover - fallback import absolu (standalone)
     import script_validation  # type: ignore[no-redef]
     import bridge_http  # type: ignore[no-redef]
+    import script_commands  # type: ignore[no-redef]
+    import script_sandbox  # type: ignore[no-redef]
 
 # Réexports pour compatibilité interne (anciens noms locaux).
 MAX_REQUEST_BYTES = bridge_http.MAX_REQUEST_BYTES
@@ -3059,137 +3063,106 @@ class QgisBridge(BridgeQObject):
         self._notify(f"MNH créé : {payload['outputLayerName']}.", Qgis.Success)
         return json.dumps(payload, ensure_ascii=False)
 
+    # ═══════════════════════════════════════════════════════════════════════════
+    # EXÉCUTION DE SCRIPT — hors du processus QGIS
+    #
+    # Il n'y a plus d'`exec()` ici. Le script généré par un LLM part dans un
+    # sous-processus jetable (`script_sandbox`) : builtins réduits, imports
+    # filtrés, aucun accès fichier/réseau, aucun accès au projet QGIS, et
+    # terminaison par l'OS au timeout.
+    #
+    # Conséquence assumée : un script brut ne peut plus muter la session QGIS.
+    # Les mutations passent par l'API de commandes autorisées
+    # (`script_commands` + `runCommands`), qui n'exécute aucun code.
+    #
+    # La confirmation utilisateur est INCONDITIONNELLE. Aucun appelant — ni le
+    # bridge HTTP, ni le QWebChannel — ne peut la désactiver.
+    # ═══════════════════════════════════════════════════════════════════════════
+
     def _execute_script_payload(self, script, require_confirmation=True):
-        if require_confirmation:
-            message_box = QMessageBox(self.iface.mainWindow())
-            message_box.setIcon(QMessageBox.Warning)
-            message_box.setWindowTitle("QGISAI+")
-            message_box.setText("Confirmer l'exécution du script PyQGIS ?")
-            message_box.setInformativeText(
-                "Le code proposé par l'IA va s'exécuter dans votre session QGIS."
+        # `require_confirmation` est conservé pour compatibilité de signature,
+        # mais n'a plus de pouvoir : une demande de désactivation est un signal
+        # de sécurité, on la journalise et on confirme quand même.
+        if not require_confirmation:
+            QgsMessageLog.logMessage(
+                "Demande d'exécution sans confirmation ignorée (confirmation forcée).",
+                "QGISAI+",
+                level=Qgis.Warning,
             )
-            message_box.setDetailedText(script)
-            message_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            message_box.setDefaultButton(QMessageBox.Cancel)
 
-            if message_box.exec() != QMessageBox.Ok:
-                message = "Exécution annulée."
-                self._notify(message, Qgis.Warning)
-                return {
-                    "ok": False,
-                    "message": message,
-                    "traceback": "",
-                }
+        is_valid, error_message = script_validation.validate_script(script)
+        if not is_valid:
+            QgsMessageLog.logMessage(
+                f"Script bloqué par validation: {error_message}",
+                "QGISAI+",
+                level=Qgis.Warning,
+            )
+            self._notify("Script bloqué pour sécurité.", Qgis.Critical, duration=6)
+            return {
+                "ok": False,
+                "message": f"Script bloqué pour sécurité: {error_message}",
+                "traceback": error_message or "",
+            }
 
-        context = {
-            "__builtins__": __builtins__,
-            "iface": self.iface,
-            "processing": processing,
-            "Qgis": Qgis,
-            "QgsCoordinateReferenceSystem": QgsCoordinateReferenceSystem,
-            "QgsMessageLog": QgsMessageLog,
-            "QgsProject": QgsProject,
-            "QgsVectorLayer": QgsVectorLayer,
+        message_box = QMessageBox(self.iface.mainWindow())
+        message_box.setIcon(QMessageBox.Warning)
+        message_box.setWindowTitle("QGISAI+")
+        message_box.setText("Confirmer l'exécution du script ?")
+        message_box.setInformativeText(
+            "Le code proposé par l'IA sera exécuté dans un bac à sable isolé, "
+            "hors de votre session QGIS : il ne peut ni lire vos fichiers, ni "
+            "accéder au réseau, ni modifier le projet ouvert."
+        )
+        message_box.setDetailedText(script)
+        message_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        message_box.setDefaultButton(QMessageBox.Cancel)
+
+        if message_box.exec() != QMessageBox.Ok:
+            message = "Exécution annulée."
+            self._notify(message, Qgis.Warning)
+            return {"ok": False, "message": message, "traceback": ""}
+
+        timeout = int(os.environ.get("QGISIA_SANDBOX_TIMEOUT", "30"))
+        result = script_sandbox.run_sandboxed(script, timeout_seconds=timeout)
+
+        payload = {
+            "ok": bool(result.get("ok")),
+            "message": result.get("message", ""),
+            "traceback": result.get("traceback", ""),
+            "stdout": result.get("stdout", ""),
         }
-
-        # ═══════════════════════════════════════════════════════════════════════
-        # EXÉCUTION THREAD-SAFE AVEC TIMEOUT
-        # Le script est exécuté dans un thread worker pour éviter les crashes de QGIS
-        # ═══════════════════════════════════════════════════════════════════════
-        worker = ScriptWorker(script, context, timeout_seconds=30)
-        result_container = {}
-        
-        def on_finished(res):
-            result_container['result'] = res
-            
-        def on_error(err):
-            result_container['error'] = err
-            
-        worker.finished.connect(on_finished)
-        worker.error.connect(on_error)
-        
-        # Créer un thread pour le worker
-        thread = QThread()
-        worker.moveToThread(thread)
-        thread.started.connect(worker.run)
-        
-        # Event loop pour attendre le résultat (bloquant mais avec timeout)
-        loop = QEventLoop()
-        worker.finished.connect(loop.quit)
-        
-        # Timer de sécurité: forcer la sortie après 35s même si le worker bloque
-        safety_timer = QTimer()
-        safety_timer.setSingleShot(True)
-        safety_timer.timeout.connect(loop.quit)
-        
-        # Démarrer
-        thread.start()
-        safety_timer.start(35000)  # 35 secondes max
-        
-        # Bloquer jusqu'à completion ou timeout
-        loop.exec()
-        
-        # Nettoyage
-        safety_timer.stop()
-        thread.quit()
-        thread.wait(5000)  # Attendre 5s max pour le nettoyage
-        if thread.isRunning():
-            thread.terminate()  # Forcer l'arrêt si nécessaire
-        
-        # Vérifier le résultat
-        if 'error' in result_container:
-            error_msg = f"Erreur thread worker: {result_container['error']}"
-            QgsMessageLog.logMessage(error_msg, "QGISAI+", level=Qgis.Critical)
-            return {
-                "ok": False,
-                "message": error_msg,
-                "traceback": error_msg,
-            }
-            
-        if 'result' not in result_container:
-            # Timeout ou crash du worker
-            timeout_msg = "Script interrompu (timeout 30s ou crash QGIS protégé)"
-            QgsMessageLog.logMessage(timeout_msg, "QGISAI+", level=Qgis.Warning)
-            self._notify(timeout_msg, Qgis.Warning, duration=5)
-            return {
-                "ok": False,
-                "message": timeout_msg,
-                "traceback": "Le script a dépassé le temps maximum d'exécution (30s)\nou a provoqué une erreur protégée.",
-            }
-        
-        result = result_container['result']
-        
-        # Notifier selon le résultat
-        if result.get("ok"):
-            self._notify(result.get("message", "Script exécuté."), Qgis.Success)
+        if payload["ok"]:
+            self._notify(payload["message"] or "Script exécuté.", Qgis.Success)
         else:
-            self._notify(result.get("message", "Erreur script."), Qgis.Critical, duration=6)
-            
-        return result
+            self._notify(payload["message"] or "Erreur script.", Qgis.Critical, duration=6)
+        return payload
 
     def _execute_script(self, script, require_confirmation=True):
-        return self._execute_script_payload(
-            script,
-            require_confirmation=require_confirmation,
-        )["message"]
+        return self._execute_script_payload(script)["message"]
+
+    def runCommandBatch(self, commands):
+        """Exécute un lot de commandes autorisées (API sans exec).
+
+        `commands` est déjà validé par `script_commands.validate_command_batch`
+        côté serveur : on ne reçoit ici que des couples (méthode, arguments)
+        issus de la table figée.
+        """
+        results = []
+        for method_name, args in commands:
+            method = getattr(self, method_name)
+            results.append({"command": method_name, "result": method(*args)})
+        return results
 
     @BridgeSlot(str, bool, result=str)
     def runScriptDetailed(self, script, require_confirmation=True):
         return json.dumps(
-            self._execute_script_payload(
-                script,
-                require_confirmation=require_confirmation,
-            ),
+            self._execute_script_payload(script, require_confirmation),
             ensure_ascii=False,
         )
 
     @BridgeSlot(str, result=str)
     def runScript(self, script):
-        return self._execute_script(script, require_confirmation=True)
-
-    @BridgeSlot(str, result=str)
-    def runScriptDirect(self, script):
-        return self._execute_script(script, require_confirmation=False)
+        return self._execute_script(script)
 
     # ═══════════════════════════════════════════════════════════════════════════════
     # Fonctions pour l'installation et la gestion d'Ollama
@@ -3377,132 +3350,9 @@ class QgisBridge(BridgeQObject):
             })
 
 
-class ScriptWorker(QObject):
-    """
-    Worker thread pour exécuter des scripts PyQGIS de manière sécurisée.
-    Évite les crashes de QGIS en cas de script problématique (boucle infinie, exit(), etc.)
-    """
-    finished = pyqtSignal(dict)
-    error = pyqtSignal(str)
-
-    def __init__(self, script, context, timeout_seconds=30):
-        super().__init__()
-        self.script = script
-        self.context = context
-        self.timeout_seconds = timeout_seconds
-        self._is_running = False
-
-    @staticmethod
-    def validate_script(script):
-        """Valide le script avant exécution. Retourne (is_valid, error_message).
-
-        Délègue au module pur `script_validation` (testable en CI sans QGIS).
-        """
-        return script_validation.validate_script(script)
-    
-    def run(self):
-        """Exécute le script avec protection timeout dans un thread séparé"""
-        self._is_running = True
-        
-        # ═══════════════════════════════════════════════════════════════════════
-        # VALIDATION PRÉ-EXÉCUTION
-        # ═══════════════════════════════════════════════════════════════════════
-        is_valid, error_message = self.validate_script(self.script)
-        if not is_valid:
-            QgsMessageLog.logMessage(
-                f"Script bloqué par validation: {error_message}",
-                "QGISAI+",
-                level=Qgis.Warning,
-            )
-            result = {
-                "ok": False,
-                "message": f"Script bloqué pour sécurité: {error_message}",
-                "traceback": error_message
-            }
-            self._is_running = False
-            self.finished.emit(result)
-            return
-        
-        result = {"ok": False, "message": "", "traceback": ""}
-        
-        # Utiliser un thread séparé pour le script avec timeout
-        script_thread = threading.Thread(target=self._execute_script)
-        script_thread.daemon = True
-        script_thread.start()
-        script_thread.join(timeout=self.timeout_seconds)
-        
-        if script_thread.is_alive():
-            # Timeout dépassé - on ne peut pas tuer le thread proprement en Python
-            # mais on marque l'exécution comme échouée
-            result["ok"] = False
-            result["message"] = f"Script interrompu après {self.timeout_seconds}s (timeout)"
-            result["traceback"] = "Le script a dépassé le temps d'exécution maximum.\n"
-            result["traceback"] += "Causes possibles : boucle infinie, opération trop lourde, ou accès bloquant."
-            QgsMessageLog.logMessage(
-                f"Script PyQGIS timeout après {self.timeout_seconds}s",
-                "QGISAI+",
-                level=Qgis.Warning,
-            )
-        else:
-            # Le thread a terminé normalement ou avec une exception
-            result = getattr(self, '_execution_result', result)
-            
-        self._is_running = False
-        self.finished.emit(result)
-        
-    def _execute_script(self):
-        """Exécute réellement le script dans le contexte fourni"""
-        try:
-            # Créer une copie du contexte pour éviter les modifications globales
-            local_context = dict(self.context)
-            
-            # Remplacer exit/quit/sys.exit par des fonctions sans effet
-            local_context['exit'] = lambda *args: None
-            local_context['quit'] = lambda *args: None
-            
-            # Exécuter le script
-            exec(self.script, local_context, local_context)
-            
-            self._execution_result = {
-                "ok": True,
-                "message": "Script exécuté avec succès.",
-                "traceback": ""
-            }
-        except NameError as exc:
-            # Erreur de fonction non définie - très commune avec les LLM
-            error_message = traceback.format_exc()
-            func_name = str(exc).split("'")[1] if "'" in str(exc) else "inconnue"
-            helpful_message = (
-                f"ERREUR: Fonction '{func_name}' n'existe pas dans PyQGIS.\n\n"
-                f"Causes possibles:\n"
-                f"- Le LLM a halluciné une fonction inexistante\n"
-                f"- Cette fonction n'est pas disponible dans l'API PyQGIS standard\n"
-                f"- Il faut utiliser une approche différente\n\n"
-                f"Conseil: Redemandez au LLM de corriger le script en utilisant UNIQUEMENT\n"
-                f"les classes et méthodes réelles de l'API QGIS (QgsProject, QgsVectorLayer, etc.)"
-            )
-            QgsMessageLog.logMessage(
-                f"Erreur NameError (fonction inexistante) : {error_message}",
-                "QGISAI+",
-                level=Qgis.Warning,
-            )
-            self._execution_result = {
-                "ok": False,
-                "message": helpful_message,
-                "traceback": error_message
-            }
-        except Exception as exc:
-            error_message = traceback.format_exc()
-            QgsMessageLog.logMessage(
-                f"Erreur script IA (worker thread) :\n{error_message}",
-                "QGISAI+",
-                level=Qgis.Critical,
-            )
-            self._execution_result = {
-                "ok": False,
-                "message": f"Erreur lors de l'exécution : {exc}",
-                "traceback": error_message
-            }
+# ScriptWorker a ete supprime : il portait le exec() du script LLM dans le
+# processus QGIS, avec __builtins__ complet et un thread daemon que le timeout
+# ne tuait pas. Remplacement hors-processus : QGISIA2/script_sandbox.py.
 
 
 class MainThreadExecutor(QObject):
@@ -3547,12 +3397,54 @@ class ThreadedAssetServer:
         self.thread = None
         self.port = None
         self.request_timeout = request_timeout  # Configurable timeout (défaut 120s pour raster)
+        # Jeton d'authentification du bridge : tiré une fois par démarrage du
+        # serveur, jamais persisté, jamais écrit dans un log ni dans une URL.
+        # Il n'est transmis qu'à l'UI locale, par injection d'une balise <meta>
+        # dans la page servie depuis 127.0.0.1 (voir _inject_token).
+        self.token = bridge_http.generate_token()
         # Rate-limiter anti boucle d'agent runaway / abus local. Limite haute
         # pour ne pas pénaliser le tool-calling légitime (nombreux appels rapides).
         self.security = (
             SecurityMiddleware(max_requests=1200, window_seconds=60.0)
             if SecurityMiddleware is not None else None
         )
+
+    def _guard(self, handler, method):
+        """Applique le contrat d'accès. True si la requête peut continuer.
+
+        Appelé AVANT toute lecture de corps et avant tout dispatch : une
+        requête refusée n'atteint jamais une action QGIS.
+        """
+        result = bridge_http.guard_request(handler, self.token, method)
+        if result.ok:
+            return True
+        bridge_http.send_guard_error(handler, result)
+        return False
+
+    def _reject_confirmation_override(self, handler, body):
+        """Refuse toute tentative de piloter la confirmation depuis HTTP.
+
+        `requireConfirmation` a quitté le contrat réseau : la confirmation est
+        inconditionnelle. Un client qui envoie encore ce champ est soit
+        obsolète, soit hostile — dans les deux cas on répond 400 plutôt que de
+        l'ignorer en silence, pour que la tentative soit visible.
+        """
+        if "requireConfirmation" not in body:
+            return False
+        QgsMessageLog.logMessage(
+            "Tentative de désactivation de la confirmation via HTTP — refusée.",
+            "QGISAI+",
+            level=Qgis.Warning,
+        )
+        self._send_json(handler, 400, {
+            "ok": False,
+            "error": (
+                "Le champ 'requireConfirmation' n'est pas supporté : la "
+                "confirmation utilisateur est obligatoire et ne peut pas être "
+                "désactivée depuis le bridge HTTP."
+            ),
+        })
+        return True
 
     def _enforce_rate_limit(self, handler):
         """Renvoie True si la requête est autorisée, sinon répond 429 et False."""
@@ -3574,6 +3466,38 @@ class ThreadedAssetServer:
         _send_cors_headers(handler)
         handler.end_headers()
         handler.wfile.write(body)
+
+    def _serve_entrypoint(self, handler, path):
+        """Sert la page d'entrée en y injectant le jeton. True si servie.
+
+        C'est l'unique canal de transmission du jeton à l'UI : la page est
+        servie depuis 127.0.0.1, le jeton voyage dans le corps HTML et jamais
+        dans l'URL.
+        """
+        page = os.environ.get("GEOAI_TEST_PAGE", "index.html")
+        if path not in ("/", f"/{page}"):
+            return False
+
+        file_path = os.path.join(self.directory, page)
+        if not os.path.isfile(file_path):
+            return False
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as handle:
+                html = handle.read()
+        except (OSError, UnicodeDecodeError):
+            return False
+
+        body = bridge_http.inject_token_meta(html, self.token).encode("utf-8")
+        handler.send_response(200)
+        handler.send_header("Content-Type", "text/html; charset=utf-8")
+        handler.send_header("Content-Length", str(len(body)))
+        # La page porte un secret : jamais de cache, jamais de Referer sortant.
+        handler.send_header("Cache-Control", "no-store")
+        handler.send_header("Referrer-Policy", "no-referrer")
+        handler.end_headers()
+        handler.wfile.write(body)
+        return True
 
     def _read_json_body(self, handler):
         def _log(msg):
@@ -3935,22 +3859,41 @@ class ThreadedAssetServer:
                     body.get("lineWkt", ""),
                     body.get("outputName", ""),
                 )
+            # /api/qgis/runScriptDirect a été SUPPRIMÉ : il court-circuitait la
+            # confirmation utilisateur. Aucune route n'expose plus d'exécution
+            # non confirmée, et le champ `requireConfirmation` a quitté le
+            # contrat réseau (voir _reject_confirmation_override).
             elif route == "/api/qgis/runScript":
+                if self._reject_confirmation_override(handler, body):
+                    return True
                 result = self._bridge_call(
                     "runScript",
                     body.get("script", ""),
                 )
-            elif route == "/api/qgis/runScriptDirect":
-                result = self._bridge_call(
-                    "runScriptDirect",
-                    body.get("script", ""),
-                )
             elif route == "/api/qgis/runScriptDetailed":
+                if self._reject_confirmation_override(handler, body):
+                    return True
                 result = self._bridge_call(
                     "runScriptDetailed",
                     body.get("script", ""),
-                    bool(body.get("requireConfirmation", True)),
+                    True,
                 )
+            elif route == "/api/qgis/runCommands":
+                # API de commandes autorisées : mutations du projet SANS exec.
+                ok, error, calls = script_commands.validate_command_batch(
+                    body.get("commands")
+                )
+                if not ok:
+                    self._send_json(handler, 400, {"ok": False, "error": error})
+                    return True
+                result = self._bridge_call("runCommandBatch", calls)
+            elif route == "/api/qgis/listCommands":
+                self._send_json(handler, 200, {
+                    "ok": True,
+                    "commands": script_commands.list_commands(),
+                    "writesFilesystem": script_commands.filesystem_writing_commands(),
+                })
+                return True
             elif route == "/api/qgis/getSystemSpecs":
                 # Retourne les vraies specs système (RAM, CPU, GPU) via psutil + nvidia-smi
                 if system_capabilities is not None:
@@ -4879,6 +4822,20 @@ class ThreadedAssetServer:
                 super().__init__(*args, directory=server_instance.directory, **kwargs)
 
             def do_OPTIONS(self):
+                # Le préflight ne déclenche aucune action : il ne porte pas le
+                # jeton (le navigateur ne l'y met pas). On contrôle tout de même
+                # Host et Origin pour ne pas annoncer nos en-têtes à un tiers.
+                if not bridge_http.is_local_host(self.headers.get("Host")):
+                    bridge_http.send_guard_error(
+                        self, bridge_http.GuardResult(False, 403, "Hôte non local refusé.")
+                    )
+                    return
+                origin = self.headers.get("Origin")
+                if origin and not bridge_http.is_local_origin(origin):
+                    bridge_http.send_guard_error(
+                        self, bridge_http.GuardResult(False, 403, "Origine non locale refusée.")
+                    )
+                    return
                 self.send_response(200)
                 _send_cors_headers(self)
                 self.send_header("Content-Length", "0")
@@ -4887,6 +4844,8 @@ class ThreadedAssetServer:
             def do_GET(self):
                 parsed = urlparse(self.path)
                 if parsed.path.startswith("/api/"):
+                    if not server_instance._guard(self, "GET"):
+                        return
                     if not server_instance._enforce_rate_limit(self):
                         return
                 if parsed.path.startswith("/api/qgis/"):
@@ -4896,14 +4855,29 @@ class ThreadedAssetServer:
                     if server_instance._handle_llm_request(self, "GET"):
                         return
 
+                # Ressources statiques : pas de jeton (c'est la page qui le
+                # reçoit), mais l'en-tête Host doit rester local — sans quoi un
+                # rebinding DNS lirait la page ET le jeton qu'elle porte.
+                if not bridge_http.is_local_host(self.headers.get("Host")):
+                    bridge_http.send_guard_error(
+                        self, bridge_http.GuardResult(False, 403, "Hôte non local refusé.")
+                    )
+                    return
+
                 self.path = parsed.path
+                if server_instance._serve_entrypoint(self, parsed.path):
+                    return
                 super().do_GET()
 
             def do_POST(self):
                 parsed = urlparse(self.path)
-                if parsed.path.startswith("/api/"):
-                    if not server_instance._enforce_rate_limit(self):
-                        return
+                if not parsed.path.startswith("/api/"):
+                    self.send_error(404)
+                    return
+                if not server_instance._guard(self, "POST"):
+                    return
+                if not server_instance._enforce_rate_limit(self):
+                    return
                 if parsed.path.startswith("/api/llm/"):
                     if server_instance._handle_llm_request(self, "POST"):
                         return

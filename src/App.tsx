@@ -515,9 +515,9 @@ async function maybeAutoExecuteAssistantPythonScript(input: {
   for (let repairAttempt = 0; repairAttempt <= maxRepairs; repairAttempt += 1) {
     // ── Guard rail 2: Wrap script with try/except before execution ─────────
     const scriptToRun = wrapScriptWithGuardRails(currentScript);
-    const result = await runScriptDetailed(scriptToRun, {
-      requireConfirmation: false,
-    });
+    // La confirmation utilisateur est inconditionnelle : la boucle de
+    // réparation automatique ne peut plus l'escamoter.
+    const result = await runScriptDetailed(scriptToRun);
 
     if (!result) {
       appendDebugEvent({

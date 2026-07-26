@@ -136,6 +136,10 @@ def execute_tool_call(
 
 
 # Outils executant du code/SQL arbitraire : a passer au crible des guardrails.
+# `runScriptDirect` a ete supprime du bridge (il court-circuitait la
+# confirmation). On le laisse volontairement dans cet ensemble : si le nom
+# reapparaissait un jour, il serait audite d'office plutot que d'echapper au
+# garde-fou. Un ensemble d'audit doit toujours faillir du cote fermeture.
 _CODE_EXEC_TOOLS = {"runScript", "runScriptDirect", "runScriptDetailed"}
 
 
