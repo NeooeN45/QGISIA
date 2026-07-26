@@ -28,10 +28,12 @@ from __future__ import annotations
 
 import hmac
 import json
+import os
 import re
 import secrets
 from html import escape as html_escape
 from typing import Any, Callable, Dict, NamedTuple, Optional
+from urllib.parse import urlsplit
 
 # Taille max d'un body de requête. 32 Mo autorise les images base64 (vision)
 # tout en bloquant les payloads de saturation mémoire (DoS).
@@ -148,6 +150,57 @@ def send_guard_error(handler, result: GuardResult) -> None:
     send_cors_headers(handler)
     handler.end_headers()
     handler.wfile.write(body)
+
+
+# ── Clients locaux de confiance (MCP, agent) ──────────────────────────────────
+#
+# L'UI navigateur reçoit le jeton par balise <meta>. Mais le plugin a aussi des
+# clients Python légitimes — le serveur MCP et la boucle d'outils de l'agent —
+# qui appellent le bridge en HTTP sans être des navigateurs. Ils doivent donc
+# s'authentifier explicitement, et fournir l'`Origin` que le contrat exige sur
+# les méthodes mutantes.
+#
+# Le jeton actif est publié en mémoire par le serveur au démarrage. Pour un
+# serveur MCP lancé dans un AUTRE processus, il est repris de la variable
+# d'environnement QGISIA_BRIDGE_TOKEN.
+
+_ACTIVE_TOKEN: Optional[str] = None
+
+TOKEN_ENV_VAR = "QGISIA_BRIDGE_TOKEN"
+
+
+def set_active_token(token: Optional[str]) -> None:
+    """Publie le jeton du serveur courant pour les clients locaux in-process."""
+    global _ACTIVE_TOKEN
+    _ACTIVE_TOKEN = token
+
+
+def get_active_token() -> str:
+    """Jeton du bridge : mémoire du processus, sinon variable d'environnement."""
+    return _ACTIVE_TOKEN or os.environ.get(TOKEN_ENV_VAR, "") or ""
+
+
+def origin_for(bridge_url: Optional[str]) -> str:
+    """Origine (schéma://hôte:port) déduite d'une URL de bridge."""
+    parts = urlsplit(bridge_url or "")
+    if parts.scheme and parts.netloc:
+        return f"{parts.scheme}://{parts.netloc}"
+    return "http://127.0.0.1"
+
+
+def local_client_headers(
+    bridge_url: Optional[str] = None, token: Optional[str] = None
+) -> Dict[str, str]:
+    """En-têtes qu'un client local de confiance doit envoyer au bridge.
+
+    Un client qui les utilise satisfait `guard_request` : c'est le pendant
+    exact du contrat côté serveur, pour qu'ils ne puissent pas diverger.
+    """
+    return {
+        "Content-Type": "application/json",
+        "Origin": origin_for(bridge_url),
+        TOKEN_HEADER: token if token is not None else get_active_token(),
+    }
 
 
 # ── Transmission du jeton à l'UI locale ───────────────────────────────────────

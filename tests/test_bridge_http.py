@@ -283,6 +283,52 @@ def test_token_never_travels_in_the_url():
     assert "&token=" not in html
 
 
+# ── Clients locaux de confiance (serveur MCP, boucle d'outils de l'agent) ────
+
+@pytest.fixture(autouse=True)
+def _reset_active_token():
+    yield
+    bh.set_active_token(None)
+    os.environ.pop(bh.TOKEN_ENV_VAR, None)
+
+
+def test_active_token_round_trip():
+    bh.set_active_token("JETON-ACTIF")
+    assert bh.get_active_token() == "JETON-ACTIF"
+    bh.set_active_token(None)
+    assert bh.get_active_token() == ""
+
+
+def test_active_token_falls_back_to_the_environment():
+    # Cas du serveur MCP lancé dans un autre processus que le plugin.
+    bh.set_active_token(None)
+    os.environ[bh.TOKEN_ENV_VAR] = "JETON-ENV"
+    assert bh.get_active_token() == "JETON-ENV"
+
+
+def test_origin_is_derived_from_the_bridge_url():
+    assert bh.origin_for("http://localhost:8157") == "http://localhost:8157"
+    assert bh.origin_for("http://127.0.0.1:8161/api/qgis/x") == "http://127.0.0.1:8161"
+    assert bh.origin_for("") == "http://127.0.0.1"
+    assert bh.origin_for(None) == "http://127.0.0.1"
+
+
+def test_local_client_headers_satisfy_the_server_contract():
+    # Le client et le serveur ne doivent pas pouvoir diverger : les en-têtes
+    # produits par l'aide client doivent passer la garde du serveur.
+    bh.set_active_token("JETON-ACTIF")
+    headers = bh.local_client_headers("http://127.0.0.1:8157")
+    handler = _FakeHandler({"Host": "127.0.0.1:8157", **headers})
+    assert bh.guard_request(handler, "JETON-ACTIF", "POST").ok is True
+
+
+def test_local_client_headers_without_a_token_are_refused():
+    bh.set_active_token(None)
+    headers = bh.local_client_headers("http://127.0.0.1:8157")
+    handler = _FakeHandler({"Host": "127.0.0.1:8157", **headers})
+    assert bh.guard_request(handler, "UN-JETON", "POST").status == 401
+
+
 # ── Cohérence avec la page réellement livrée ─────────────────────────────────
 
 _WEB_INDEX = os.path.join(
@@ -398,6 +444,15 @@ def _live_headers(server, **overrides):
     }
     base.update(overrides)
     return {k: v for k, v in base.items() if v is not None}
+
+
+def test_live_local_client_headers_reach_the_dispatcher(spy_server):
+    # Bout en bout : un client local (serveur MCP / agent) qui utilise l'aide
+    # `local_client_headers` est bien accepté par un vrai serveur.
+    bh.set_active_token(spy_server.token)
+    headers = bh.local_client_headers(f"http://127.0.0.1:{spy_server.port}")
+    assert spy_server.request(headers=headers) == 200
+    assert len(spy_server.dispatch_calls) == 1
 
 
 def test_live_valid_request_reaches_dispatcher(spy_server):

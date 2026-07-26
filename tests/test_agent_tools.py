@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / "QGISIA2" / "vendor"))
 sys.path.insert(0, str(ROOT / "QGISIA2"))
 
 import agent_tools as at  # noqa: E402
+import bridge_http as bh  # noqa: E402
 
 
 def test_to_openai_tools_shape():
@@ -114,9 +115,11 @@ class _FakeClient:
     def __init__(self, text="OK"):
         self.text = text
         self.calls = []
+        self.headers = []
 
-    async def post(self, url, json):  # noqa: A002 - signature imposee par httpx
+    async def post(self, url, json, headers=None):  # noqa: A002 - signature httpx
         self.calls.append((url, json))
+        self.headers.append(headers or {})
         return _FakeResp(self.text)
 
 
@@ -132,6 +135,27 @@ def test_execute_tool_call_routes_to_bridge():
     url, payload = fake.calls[0]
     assert url == "http://localhost:8157/api/qgis/zoomToLayer"
     assert payload == {"layerId": "layer_1"}
+
+
+def test_execute_tool_call_authenticates_against_the_bridge():
+    # Le bridge exige un jeton, une origine locale et application/json. Si
+    # l'agent ne les envoie pas, chaque appel d'outil part en 403 puis 401 —
+    # c'est exactement la regression que ce test verrouille.
+    bh.set_active_token("JETON-DE-TEST")
+    try:
+        fake = _FakeClient("ok")
+        at.execute_tool_call(
+            "zoomToLayer",
+            {"layerId": "layer_1"},
+            bridge_url="http://localhost:8157",
+            http_client=fake,
+        )
+        sent = fake.headers[0]
+        assert sent[bh.TOKEN_HEADER] == "JETON-DE-TEST"
+        assert sent["Origin"] == "http://localhost:8157"
+        assert sent["Content-Type"] == "application/json"
+    finally:
+        bh.set_active_token(None)
 
 
 def test_execute_tool_call_unknown_tool_raises():

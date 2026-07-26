@@ -822,13 +822,19 @@ const OPENAI_QGIS_TOOLS: OpenAiToolDefinition[] = [
     type: "function",
     function: {
       name: "runScript",
-      description: "Executer un script Python PyQGIS valide par l'utilisateur dans QGIS.",
+      description:
+        "Executer un script Python de CALCUL dans un bac a sable isole, apres " +
+        "confirmation de l'utilisateur. Le script n'a PAS acces au projet QGIS, " +
+        "ni aux fichiers, ni au reseau. Il ne peut donc PAS ajouter, modifier ou " +
+        "styliser une couche : pour cela, utiliser les outils bridge dedies.",
       parameters: {
         type: "object",
         properties: {
           script: {
             type: "string",
-            description: "Code Python PyQGIS a executer.",
+            description:
+              "Code Python de calcul pur (math, statistics, json, datetime, " +
+              "collections...). Les imports os/sys/pathlib/requests sont refuses.",
           },
         },
         required: ["script"],

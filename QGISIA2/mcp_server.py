@@ -37,6 +37,11 @@ import os
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Optional
 
+try:
+    from . import bridge_http
+except ImportError:  # pragma: no cover - fallback import absolu (standalone)
+    import bridge_http  # type: ignore[no-redef]
+
 # Default bridge URL (overridable via env var)
 DEFAULT_BRIDGE_URL = os.environ.get("QGISIA_BRIDGE_URL", "http://localhost:8157")
 
@@ -201,8 +206,12 @@ TOOL_CATALOG: list[McpToolSpec] = [
     McpToolSpec(
         name="runScript",
         description=(
-            "Executer un script PyQGIS arbitraire dans le contexte du projet. "
-            "DANGER : aucune validation. Reserve aux power users."
+            "Executer un script Python de CALCUL dans un bac a sable isole, "
+            "apres confirmation de l'utilisateur. Le script n'a PAS acces au "
+            "projet QGIS, ni aux fichiers, ni au reseau : il ne peut que "
+            "calculer et afficher un resultat. Pour MODIFIER le projet "
+            "(couches, symbologie, etendue), utiliser les outils dedies, "
+            "jamais ce script."
         ),
         input_schema={
             "type": "object",
@@ -812,6 +821,11 @@ async def call_bridge(
     avec methode async post()).
     """
     url = f"{bridge_url.rstrip('/')}{endpoint}"
+    # Le bridge exige un jeton, une origine locale et application/json. Ce
+    # serveur MCP est un client local de confiance, pas un navigateur : il
+    # fournit donc ces en-tetes explicitement. Sans eux, chaque appel serait
+    # refuse (403 sur l'origine absente, puis 401 sur le jeton).
+    headers = bridge_http.local_client_headers(bridge_url)
     if http_client is not None:
         client = http_client
         owns_client = False
@@ -827,7 +841,7 @@ async def call_bridge(
         owns_client = True
 
     try:
-        resp = await client.post(url, json=payload)
+        resp = await client.post(url, json=payload, headers=headers)
         if hasattr(resp, "raise_for_status"):
             resp.raise_for_status()
         return resp.text if hasattr(resp, "text") else str(resp)

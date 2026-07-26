@@ -4915,6 +4915,10 @@ class ThreadedAssetServer:
 
         self.httpd.timeout = self.request_timeout
         self.port = self.httpd.server_address[1]
+        # Publie le jeton pour les clients locaux de confiance du plugin
+        # (serveur MCP, boucle d'outils de l'agent) : ils appellent le bridge
+        # en HTTP sans etre des navigateurs et doivent donc s'authentifier.
+        bridge_http.set_active_token(self.token)
         self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
         self.thread.start()
         return self.port
@@ -4928,6 +4932,8 @@ class ThreadedAssetServer:
         self.httpd = None
         self.thread = None
         self.port = None
+        # Le jeton meurt avec le serveur : le prochain demarrage en tire un neuf.
+        bridge_http.set_active_token(None)
 
 
 class GeoAIAssistant:

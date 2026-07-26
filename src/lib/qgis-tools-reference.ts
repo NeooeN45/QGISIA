@@ -47,8 +47,11 @@ Utilise TOUJOURS ces outils natifs en priorité avant d'écrire du PyQGIS libre.
 - **createInventoryGrid(layerId, cellWidth, cellHeight, gridName, centroidsName, clipToSource?)** → créer une grille d'inventaire et ses centroïdes sur une emprise polygonale
 
 ### Exécution de scripts
-- **runScript(script)** → exécuter un script PyQGIS dans la console QGIS
-- **runScriptDetailed(script, requireConfirmation)** → exécuter avec retour détaillé (ok, message, traceback)
+- **runScript(script)** → exécuter un script de **calcul pur** dans un bac à sable isolé, après confirmation de l'utilisateur. Aucun accès au projet QGIS, aux fichiers ni au réseau.
+- **runScriptDetailed(script)** → idem, avec retour détaillé (ok, message, traceback, stdout)
+
+> ⚠️ Un script **ne peut plus modifier le projet**. Pour agir sur les couches,
+> la symbologie ou l'étendue, utiliser les outils bridge dédiés listés ci-dessus.
 
 ### Sélection de fichiers
 - **pickFile(fileFilter, title)** → ouvrir un sélecteur de fichiers QGIS
@@ -393,7 +396,7 @@ export const QGIS_TOOLS_REFERENCE_SHORT = `
 ### Données : addRasterFile, addGeoJsonLayer, addServiceLayer (WMS/WFS/WMTS/XYZ/WCS)
 ### Raster : calculateRasterFormula, mergeRasterBands, calculateMnh
 ### Inventaire : createInventoryGrid (grille + centroïdes)
-### Scripts : runScript (PyQGIS), runScriptDetailed (avec traceback)
+### Scripts : runScript, runScriptDetailed — calcul pur en bac à sable, SANS accès au projet
 ### Sources catalogue : searchCadastreParcels, searchGeoApiCommunes, searchOverpassFeatures, searchCopernicusProducts, searchNasaCatalog
 ### Connecteurs REST FR (Sprint 4) : loadHubEauStations (qualité/hydro/piézo), loadGbifOccurrences (biodiversité), loadDvfTransactions (immobilier)
 ### IA satellitaire (Sprint 3) : segmentRasterWithSAM (Segment Anything, mode auto ou prompt texte 'trees'/'buildings')
