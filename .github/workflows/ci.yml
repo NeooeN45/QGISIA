@@ -49,11 +49,85 @@ jobs:
       - name: Syntax check (bloquant)
         run: python -m compileall -q QGISIA2 scripts
       - name: Security unit tests (bloquant)
-        # Tests purs sans dépendance QGIS/live, garants de la couche sécurité.
-        run: pytest tests/test_security_layer.py tests/test_script_validation.py tests/test_gateway_budget.py tests/test_rag_embeddings.py tests/test_bridge_http.py -q
+        # Tests purs sans dépendance QGIS/live, garants de la couche sécurité :
+        # contrat d'accès du bridge, validation statique, bac à sable
+        # hors-processus, API de commandes autorisées.
+        run: |
+          pytest -q \
+            tests/test_bridge_http.py \
+            tests/test_script_validation.py \
+            tests/test_script_sandbox.py \
+            tests/test_script_commands.py \
+            tests/test_no_exec_in_qgis_process.py \
+            tests/test_security_layer.py \
+            tests/test_gateway_budget.py \
+            tests/test_rag_embeddings.py
       - name: Broader unit tests — informatif
         # Beaucoup de tests dépendent (parfois transitivement) de l'environnement
         # QGIS ou d'appels live ; exécutés en non-bloquant tant qu'un harnais QGIS
         # headless n'est pas en place.
         run: pytest tests -q --continue-on-collection-errors
         continue-on-error: true
+
+  artifact:
+    name: Artefact (build reproductible + tests sur le ZIP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # build_release lit les blobs git : il faut l'objet du commit courant.
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Tests du constructeur d'artefact
+        run: pytest tests/test_release_build.py -q
+
+      - name: Construction reproductible (deux builds, meme SHA-256)
+        run: python scripts/build_release.py --check-reproducible
+
+      - name: Construire l'artefact
+        run: python scripts/build_release.py --output dist/QGISIA2.zip
+
+      - name: Inspecter l'artefact (routes interdites)
+        run: python scripts/build_release.py --inspect dist/QGISIA2.zip
+
+      - name: Extraire l'artefact
+        run: |
+          mkdir -p artifact-check
+          unzip -q dist/QGISIA2.zip -d artifact-check
+          test -f artifact-check/QGISIA2/geoai_assistant.py
+          # Ce qui ne doit jamais etre livre.
+          ! find artifact-check -name '__pycache__' -o -name '*.pyc' | grep -q .
+          ! test -d artifact-check/QGISIA2/vendor
+
+      - name: Tester le CODE EXTRAIT de l'artefact, pas celui du depot
+        # Les tests importent ../QGISIA2 : en les executant a cote du dossier
+        # extrait, c'est bien l'artefact livre qui est mis a l'epreuve.
+        run: |
+          cp -r tests artifact-check/tests
+          cd artifact-check
+          pytest -q \
+            tests/test_bridge_http.py \
+            tests/test_script_validation.py \
+            tests/test_script_sandbox.py \
+            tests/test_script_commands.py \
+            tests/test_no_exec_in_qgis_process.py
+
+      - name: Compiler le code extrait
+        run: python -m compileall -q artifact-check/QGISIA2
+
+      - name: Publier l'artefact et son empreinte
+        uses: actions/upload-artifact@v4
+        with:
+          name: QGISIA2-plugin
+          path: |
+            dist/QGISIA2.zip
+            dist/QGISIA2.zip.sha256
+          if-no-files-found: error
