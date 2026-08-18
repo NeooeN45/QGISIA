@@ -7,7 +7,7 @@ Parlez à vos données géographiques en langage naturel : l'agent route votre d
 vers le meilleur modèle, appelle les outils QGIS, interroge le web et l'imagerie
 satellite, génère du PyQGIS — et exécute, le tout avec NVIDIA NIM au cœur.
 
-**Version courante : 3.4** — source unique : fichier `VERSION` à la racine.
+**Version courante : 3.10** — source unique : fichier `VERSION` à la racine.
 
 **Nom produit** : « GeoSylva AI » (marketing) = plugin QGIS « QGISIA2 » (identifiant technique).
 
@@ -68,6 +68,17 @@ satellite, génère du PyQGIS — et exécute, le tout avec NVIDIA NIM au cœur.
 </td>
 </tr>
 </table>
+
+---
+
+## 🔗 Intégration GSIE
+
+QGISIA est la projection SIG et analytique du jumeau numérique fédéré GSIE.
+Il permet d'explorer, préparer, contrôler et exporter les ressources de
+GeoSylva, Ignis, Hydro, Flora et Artemis selon les contrats versionnés, sans
+devenir la source de vérité des autres domaines.
+
+Voir [GSIE_INTEGRATION.md](GSIE_INTEGRATION.md).
 
 ---
 
