@@ -11,7 +11,6 @@ exécute. Propulsé par NVIDIA NIM.
 
 [![Version](https://img.shields.io/badge/version-3.10-blue?style=for-the-badge)](VERSION)
 [![QGIS](https://img.shields.io/badge/QGIS-3.16%2B%20%7C%204.0-green?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA-NIM-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://build.nvidia.com)
 [![Licence](https://img.shields.io/badge/licence-MIT-orange?style=for-the-badge)](LICENSE)
@@ -26,9 +25,29 @@ exécute. Propulsé par NVIDIA NIM.
 
 ---
 
-[Capacités](#-capacités) · [Installation](#-installation) · [Modèles](#-modèles--nvidia-nim) · [Architecture](#-architecture) · [Sécurité](#-sécurité) · [Tests](#-tests) · [Sources de données](#-sources-de-données) · [Compatibilité](#-compatibilité)
+[Capacités](#capacités) · [Installation](#installation) · [Modèles](#modèles--nvidia-nim) · [Architecture](#architecture) · [Sécurité](#sécurité) · [Tests](#tests) · [Sources de données](#sources-de-données) · [Compatibilité](#compatibilité)
 
 </div>
+
+---
+
+## Aperçu
+
+<p align="center">
+  <img src="QGISIA2/logo.png" alt="GeoSylva AI — logo" width="220">
+</p>
+
+<!-- TODO: remplacer par un screenshot du chat + tool-calling dans QGIS -->
+<!-- <p align="center"><img src="docs/assets/qgisia-hero.png" alt="GeoSylva AI — chat et tool-calling dans QGIS" width="800"></p> -->
+
+```
+Utilisateur : « Calcule le NDVI sur la parcelle et style en dégradé rouge-vert »
+Agent       : route → vision+code · appelle outils QGIS · génère PyQGIS · exécute
+```
+
+**3 cerveaux, 1 chat.** L'agent route votre demande vers le meilleur modèle,
+appelle les outils QGIS, interroge le web et l'imagerie satellite, génère du
+PyQGIS — et exécute.
 
 ---
 
